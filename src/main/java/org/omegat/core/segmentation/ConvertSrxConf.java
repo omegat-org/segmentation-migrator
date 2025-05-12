@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +20,8 @@ import java.util.regex.Pattern;
 public class ConvertSrxConf {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConvertSrxConf.class);
+
+    private static final String EXPECTED_PACKAGE = "org.omegat.core.segmentation";
 
     public static void main(String[] args) {
         Path confFilePath = Paths.get(".").resolve(SRX.CONF_SENTSEG);
@@ -43,28 +47,76 @@ public class ConvertSrxConf {
         if (!path.toFile().exists()) {
             System.exit(1);
         }
-        Pattern pattern = Pattern.compile("<\\s*(object|java).*class=\"([\\w.]+)\"");
+        Pattern classPattern = Pattern.compile("<\\s*(object|java).*class=\"([\\w.]+)\"");
+        Pattern propertyPattern = Pattern.compile("<\\s*void.*property=\"([\\w]+)\"");
+        Pattern methodPattern = Pattern.compile("<\\s*void.*method=\"([\\w]+)\"");
+        List<String> allowedClasses = getAllowedClasses();
+        List<String> allowedProperties = getAllowedProperties();
+        List<String> allowedMethods = getAllowedMethods();
         if (!checkFileContent(path, StandardCharsets.UTF_8.newDecoder(),
                 (p, chars) -> {
-                    Matcher matcher = pattern.matcher(chars);
-                    while (matcher.find()) {
-                        String tagName = matcher.group(1);
-                        String className = matcher.group(2);
-                        if ("java".equals(tagName) && "java.beans.XMLDecoder".equals(className)) {
-                            continue;
-                        }
-                        if ("object".equals(tagName) && className.equals("java.util.ArrayList")) {
-                            continue;
-                        }
-                        if ("object".equals(tagName) && !className.startsWith("org.omegat.core.segmentation")) {
+                    Matcher propertyMatcher = propertyPattern.matcher(chars);
+                    while (propertyMatcher.find()) {
+                        String propertyName = propertyMatcher.group(1);
+                        if (!allowedProperties.contains(propertyName)) {
                             throw new RuntimeException(
-                                    String.format("Class name '%s' in file %s is not from the expected package.",
-                                            className, p));
+                                    String.format("Property name '%s' in file %s is not from the expected.",
+                                            propertyName, p));
                         }
+                    }
+
+                    Matcher classMatcher = classPattern.matcher(chars);
+                    while (classMatcher.find()) {
+                        String tagName = classMatcher.group(1);
+                        String className = classMatcher.group(2);
+                        if ((!"java".equals(tagName) || !"java.beans.XMLDecoder".equals(className)) &&
+                                (!"object".equals(tagName) || !allowedClasses.contains(className)) &&
+                                "object".equals(tagName) && !className.startsWith(EXPECTED_PACKAGE)) {
+                                throw new RuntimeException(
+                                        String.format("Class name '%s' in file %s is not from the expected package.",
+                                                className, p));
+                            }
+
+                    }
+
+                    Matcher methodMatcher = methodPattern.matcher(chars);
+                    while (methodMatcher.find()) {
+                        String methodName = methodMatcher.group(1);
+                        if (allowedMethods.contains(methodName)) {
+                            continue;
+                        }
+                        throw new RuntimeException(
+                                String.format("Method name '%s' in file %s is not from the expected.",
+                                        methodName, p));
                     }
                 })) {
             throw new Exception("Malformed segmentation.conf file is detected!");
         }
+    }
+
+    private static List<String> getAllowedMethods() {
+        List<String> allowedMethods = new ArrayList<>();
+        allowedMethods.add("add");
+        return allowedMethods;
+    }
+
+    private static List<String> getAllowedClasses() {
+        List<String> allowedClasses = new ArrayList<>();
+        allowedClasses.add("java.util.ArrayList");
+        return allowedClasses;
+    }
+
+    private static List<String> getAllowedProperties() {
+        List<String> allowedProperties = new ArrayList<>();
+        allowedProperties.add("rules");
+        allowedProperties.add("mappingRules");
+        allowedProperties.add("language");
+        allowedProperties.add("pattern");
+        allowedProperties.add("afterbreak");
+        allowedProperties.add("beforebreak");
+        allowedProperties.add("breakRule");
+        allowedProperties.add("version");
+        return allowedProperties;
     }
 
     private static boolean checkFileContent(Path p, CharsetDecoder decoder,
