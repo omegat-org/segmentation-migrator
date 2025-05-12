@@ -9,4 +9,4 @@ develocity {
         termsOfUseAgree = "yes"
     }
 }
-rootProject.name = "gradle-project-skeleton"
+rootProject.name = "omegat-segmentation-migrator"

@@ -1,41 +1,14 @@
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
-    java
-    signing
-    `maven-publish`
-    alias(libs.plugins.spotbugs)
-    alias(libs.plugins.spotless)
-    alias(libs.plugins.git.version) apply false
-    alias(libs.plugins.nexus.publish)
+    application
 }
 
-val dotgit = project.file(".git")
-if (dotgit.exists()) {
-    apply(plugin = libs.plugins.git.version.get().pluginId)
-    val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
-    val details = versionDetails()
-    val baseVersion = details.lastTag.substring(1)
-    version = when {
-        details.isCleanTag -> baseVersion
-        else -> baseVersion + "-" + details.commitDistance + "-" + details.gitHash + "-SNAPSHOT"
-    }
-} else {
-    val gitArchival = project.file(".git-archival.properties")
-    val props = Properties()
-    props.load(FileInputStream(gitArchival))
-    val versionDescribe = props.getProperty("describe")
-    val regex = "^v\\d+\\.\\d+\\.\\d+$".toRegex()
-    version = when {
-        regex.matches(versionDescribe) -> versionDescribe.substring(1)
-        else -> versionDescribe.substring(1) + "-SNAPSHOT"
-    }
+application {
+    mainClass.set("org.omegat.convert.ConvertSrxConf")
 }
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.BIN
-    gradleVersion = "8.10"
+    gradleVersion = "8.13"
 }
 
 repositories {
@@ -44,117 +17,42 @@ repositories {
 
 dependencies {
     implementation(libs.slf4j.api)
-    implementation(libs.slf4j.format.jdk14)
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.mockit.core)
-    testImplementation(libs.wiremock)
-    testRuntimeOnly(libs.slf4j.simple)
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-    withSourcesJar()
-    withJavadocJar()
+    implementation(libs.slf4j.simple)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.xml)
+    implementation(libs.jackson.jaxb)
+    implementation(libs.jetbrains.annotations)
+    testImplementation(libs.junit4)
 }
 
 tasks.named<Test>("test") {
-    useJUnitPlatform()
+    useJUnit()
 }
 
-tasks.jar {
-    manifest {
-        attributes("Automatic-Module-Name" to "tokyo.northside.example")
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            groupId = "tokyo.northside"
-            artifactId = "example"
-            pom {
-                name.set("example")
-                description.set("Example Library")
-                url.set("https://codeberg.org/miurahr/example")
-                licenses {
-                    license {
-                        name.set("The GNU General Public License, Version 3")
-                        url.set("https://www.gnu.org/licenses/licenses/gpl-3.html")
-                        distribution.set("repo")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("miurahr")
-                        name.set("Hiroshi Miura")
-                        email.set("miurahr@linux.com")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:git://codeberg.org/miurahr/example.git")
-                    developerConnection.set("scm:git:git://codeberg.org/miurahr/example.git")
-                    url.set("https://codeberg.org/miurahr/example")
-                }
-            }
-        }
-    }
-}
-
-val signKey = listOf("signingKey", "signing.keyId", "signing.gnupg.keyName").find { project.hasProperty(it) }
-tasks.withType<Sign> {
-    onlyIf { signKey != null && !rootProject.version.toString().endsWith("-SNAPSHOT") }
-}
-
-signing {
-    when (signKey) {
-        "signingKey" -> {
-            val signingKey: String? by project
-            val signingPassword: String? by project
-            useInMemoryPgpKeys(signingKey, signingPassword)
-        }
-        "signing.keyId" -> { /* do nothing */
-        }
-        "signing.gnupg.keyName" -> {
-            useGpgCmd()
-        }
-    }
-    sign(publishing.publications["mavenJava"])
-}
-
-tasks.withType<Javadoc>() {
-    setFailOnError(false)
-    options {
-        jFlags("-Duser.language=en")
-    }
-}
-
-nexusPublishing.repositories {
-    sonatype()
-}
-
-tasks.withType<Copy> {
-    duplicatesStrategy = DuplicatesStrategy.WARN
-}
-
-tasks.withType<Jar> {
+// Task to create a fat JAR
+val fatJar = tasks.register<Jar>("fatJar") {
+    archiveClassifier.set("fat") // Optional: adds '-fat' to the JAR name
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+    }
+    from(sourceSets.main.get().output) // Include compiled classes
+    dependsOn(configurations.runtimeClasspath) // Ensure runtime dependencies are resolved
+    from({
+        configurations.runtimeClasspath.get()
+            .filter { it.name.endsWith("jar") }
+            .map { zipTree(it) }
+    })
 }
 
-spotless {
-    format("misc") {
-        target(listOf("*.gradle", ".gitignore"))
-        trimTrailingWhitespace()
-        indentWithSpaces()
-        endWithNewline()
-    }
-    java {
-        target(listOf("src/*/java/**/*.java"))
-        palantirJavaFormat()
-        importOrder()
-        removeUnusedImports()
-        formatAnnotations()
-    }
+// Make the fatJar task depend on the build task, so it runs by default
+tasks.build {
+    dependsOn(fatJar)
 }
+
+// Optionally, make it the default artifact generated
+artifacts {
+    add("archives", fatJar)
+}
+
