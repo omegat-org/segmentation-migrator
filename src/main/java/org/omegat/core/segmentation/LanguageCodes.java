@@ -30,7 +30,6 @@ import org.omegat.util.OStrings;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Code-Key mappings for segmentation code.
