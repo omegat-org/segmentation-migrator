@@ -15,7 +15,8 @@ public class ConvertSrxConfTest {
     @Test
     public void testMalformedSegmentConf() {
         Path segmentconf = Paths.get(MALFORMED_SEGMENT_CONF);
-        ValidationResult result = ConvertSrxConf.checkFile(segmentconf);
+        SegmentationConfValidator validator = new SegmentationConfValidator(segmentconf);
+        ValidationResult result = validator.validate();
         assertFalse(result.isValid());
         assertTrue(result.getErrorMessage().contains("java.lang.ProcessBuilder"));
     }
@@ -23,7 +24,8 @@ public class ConvertSrxConfTest {
     @Test
     public void testSegmentionConf() {
         Path segmentconf = Paths.get("src/test/resources/segmentation/locale_de_54/segmentation.conf");
-        ValidationResult result = ConvertSrxConf.checkFile(segmentconf);
+        SegmentationConfValidator validator = new SegmentationConfValidator(segmentconf);
+        ValidationResult result = validator.validate();
         assertTrue(result.isValid());
     }
 }
