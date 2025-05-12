@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -22,12 +21,28 @@ public class ConvertSrxConf {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConvertSrxConf.class);
 
     private static final String EXPECTED_PACKAGE = "org.omegat.core.segmentation";
+    private static final Pattern CLASS_TAG_PATTERN = Pattern.compile("<\\s*(object|java).*class=\"([\\w.]+)\"");
+    private static final Pattern PROPERTY_TAG_PATTERN = Pattern.compile("<\\s*void.*property=\"([\\w]+)\"");
+    private static final Pattern METHOD_TAG_PATTERN = Pattern.compile("<\\s*void.*method=\"([\\w]+)\"");
+
+    private static final List<String> ALLOWED_CLASSES = List.of("java.util.ArrayList");
+    private static final List<String> ALLOWED_PROPERTIES = List.of(
+            "rules", "mappingRules", "language", "pattern",
+            "afterbreak", "beforebreak", "breakRule", "version"
+    );
+    private static final List<String> ALLOWED_METHODS = List.of("add");
 
     public static void main(String[] args) {
         Path confFilePath = Paths.get(".").resolve(SRX.CONF_SENTSEG);
+        if (!confFilePath.toFile().exists()) {
+            LOGGER.error("File is not found!");
+            System.exit(1);
+        }
+
         try {
             checkFile(confFilePath);
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
             System.exit(1);
         }
         try {
@@ -44,102 +59,52 @@ public class ConvertSrxConf {
     }
 
     static void checkFile(Path path) throws Exception {
-        if (!path.toFile().exists()) {
-            System.exit(1);
-        }
-        Pattern classPattern = Pattern.compile("<\\s*(object|java).*class=\"([\\w.]+)\"");
-        Pattern propertyPattern = Pattern.compile("<\\s*void.*property=\"([\\w]+)\"");
-        Pattern methodPattern = Pattern.compile("<\\s*void.*method=\"([\\w]+)\"");
-        List<String> allowedClasses = getAllowedClasses();
-        List<String> allowedProperties = getAllowedProperties();
-        List<String> allowedMethods = getAllowedMethods();
+        LOGGER.info("Checking file: {}", path);
         if (!checkFileContent(path, StandardCharsets.UTF_8.newDecoder(),
                 (p, chars) -> {
-                    Matcher propertyMatcher = propertyPattern.matcher(chars);
+                    Matcher propertyMatcher = PROPERTY_TAG_PATTERN.matcher(chars);
                     while (propertyMatcher.find()) {
                         String propertyName = propertyMatcher.group(1);
-                        if (!allowedProperties.contains(propertyName)) {
+                        if (!ALLOWED_PROPERTIES.contains(propertyName)) {
                             throw new RuntimeException(
                                     String.format("Property name '%s' in file %s is not from the expected.",
                                             propertyName, p));
                         }
                     }
 
-                    Matcher classMatcher = classPattern.matcher(chars);
+                    Matcher classMatcher = CLASS_TAG_PATTERN.matcher(chars);
                     while (classMatcher.find()) {
                         String tagName = classMatcher.group(1);
                         String className = classMatcher.group(2);
                         if ((!"java".equals(tagName) || !"java.beans.XMLDecoder".equals(className)) &&
-                                (!"object".equals(tagName) || !allowedClasses.contains(className)) &&
+                                (!"object".equals(tagName) || !ALLOWED_CLASSES.contains(className)) &&
                                 "object".equals(tagName) && !className.startsWith(EXPECTED_PACKAGE)) {
                                 throw new RuntimeException(
                                         String.format("Class name '%s' in file %s is not from the expected package.",
                                                 className, p));
-                            }
-
+                        }
                     }
 
-                    Matcher methodMatcher = methodPattern.matcher(chars);
+                    Matcher methodMatcher = METHOD_TAG_PATTERN.matcher(chars);
                     while (methodMatcher.find()) {
                         String methodName = methodMatcher.group(1);
-                        if (allowedMethods.contains(methodName)) {
-                            continue;
+                        if (!ALLOWED_METHODS.contains(methodName)) {
+                            throw new RuntimeException(
+                                    String.format("Method name '%s' in file %s is not from the expected.",
+                                            methodName, p));
                         }
-                        throw new RuntimeException(
-                                String.format("Method name '%s' in file %s is not from the expected.",
-                                        methodName, p));
                     }
                 })) {
             throw new Exception("Malformed segmentation.conf file is detected!");
         }
     }
 
-    private static List<String> getAllowedMethods() {
-        List<String> allowedMethods = new ArrayList<>();
-        allowedMethods.add("add");
-        return allowedMethods;
-    }
-
-    private static List<String> getAllowedClasses() {
-        List<String> allowedClasses = new ArrayList<>();
-        allowedClasses.add("java.util.ArrayList");
-        return allowedClasses;
-    }
-
-    private static List<String> getAllowedProperties() {
-        List<String> allowedProperties = new ArrayList<>();
-        allowedProperties.add("rules");
-        allowedProperties.add("mappingRules");
-        allowedProperties.add("language");
-        allowedProperties.add("pattern");
-        allowedProperties.add("afterbreak");
-        allowedProperties.add("beforebreak");
-        allowedProperties.add("breakRule");
-        allowedProperties.add("version");
-        return allowedProperties;
-    }
-
-    private static boolean checkFileContent(Path p, CharsetDecoder decoder,
+    private static boolean checkFileContent(Path path, CharsetDecoder decoder,
                                         BiConsumer<Path, CharSequence> consumer) {
         try {
-            byte[] bytes = Files.readAllBytes(p);
+            byte[] bytes = Files.readAllBytes(path);
             CharBuffer chars = decoder.decode(ByteBuffer.wrap(bytes));
-            for (int i = 0; i < chars.limit(); i++) {
-                int c = chars.charAt(i);
-                if (c == 0x202e) {
-                    // found Right-to-left-override: unicode 202e
-                    LOGGER.error("File contains Right-to-Left-Override (RLTO) character: {}", p);
-                    return false;
-                }
-                if (c == 0x0009 || c == 0x00a0 || c == 0x00ad || c == 0x034f || c == 0x061c
-                        || c >= 0x2000 && c < 0x200b || c == 0x2028 || c >= 0x205f && c <= 0x206f
-                        || c == 0x2800 || c == 0x3000 || c == 0x3164) {
-                    LOGGER.error("File contains invisible character: {}", p);
-                    return false;
-                }
-            }
-            chars.clear();
-            consumer.accept(p, chars);
+            consumer.accept(path, chars);
             return true;
         } catch (IOException ex) {
             LOGGER.error("Error occurred during file processing!", ex);
