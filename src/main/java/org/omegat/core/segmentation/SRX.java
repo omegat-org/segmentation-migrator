@@ -82,13 +82,13 @@ public class SRX implements Serializable {
     private static final XmlMapper mapper;
 
     static {
-        final XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-        // You should NOT use XMLInputFactor.getXMLInputFactory
-        // that returns system default object.
-        // Modifying a global object leads breakage of SuperTMXMerge
+        // You should NOT apply XMLInputFactor.getXMLInputFactory
+        // that returns the system default object.
+        // changing the global object goes breakage of SuperTMXMerge
         // library.
         // https://sourceforge.net/p/omegat/bugs/1170/
-        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.TRUE);
+        final XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         XmlFactory xmlFactory = new XmlFactory(xmlInputFactory);
         mapper = XmlMapper.builder(xmlFactory).defaultUseWrapper(false)
                 .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME).build();
