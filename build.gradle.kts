@@ -3,7 +3,7 @@ plugins {
 }
 
 application {
-    mainClass.set("org.omegat.convert.ConvertSrxConf")
+    mainClass.set("org.omegat.core.segmentation.ConvertSrxConf")
 }
 
 tasks.wrapper {
