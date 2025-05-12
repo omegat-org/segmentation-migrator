@@ -1,5 +1,6 @@
 package org.omegat.core.segmentation;
 
+import org.omegat.util.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,76 +40,75 @@ public class ConvertSrxConf {
             System.exit(1);
         }
 
-        try {
-            checkFile(confFilePath);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+        ValidationResult validationResult = checkFile(confFilePath);
+        if (!validationResult.isValid()) {
+            LOGGER.error(validationResult.getErrorMessage());
             System.exit(1);
         }
+
         try {
             Path srxFilePath = Paths.get(".").resolve(SRX.SRX_SENTSEG);
             if (srxFilePath.toFile().exists()) {
                 Files.delete(srxFilePath);
             }
-            SRX result = SRX.loadConfFile(confFilePath.toFile(), srxFilePath.getParent().toFile());
-            SRX.saveToSrx(result, srxFilePath.getParent().toFile());
+            SRX srx = SRX.loadConfFile(confFilePath.toFile(), srxFilePath.getParent().toFile());
+            SRX.saveToSrx(srx, srxFilePath.getParent().toFile());
         } catch (Exception e) {
             LOGGER.error("Error occurred during conversion!", e);
             System.exit(1);
         }
     }
 
-    static void checkFile(Path path) throws Exception {
-        LOGGER.info("Checking file: {}", path);
-        if (!checkFileContent(path, StandardCharsets.UTF_8.newDecoder(),
-                (p, chars) -> {
-                    Matcher propertyMatcher = PROPERTY_TAG_PATTERN.matcher(chars);
-                    while (propertyMatcher.find()) {
-                        String propertyName = propertyMatcher.group(1);
-                        if (!ALLOWED_PROPERTIES.contains(propertyName)) {
-                            throw new RuntimeException(
-                                    String.format("Property name '%s' in file %s is not from the expected.",
-                                            propertyName, p));
-                        }
+    static ValidationResult checkFile(Path path) {
+        return checkFileContent(path, StandardCharsets.UTF_8.newDecoder(),
+            (p, chars) -> {
+                Matcher propertyMatcher = PROPERTY_TAG_PATTERN.matcher(chars);
+                while (propertyMatcher.find()) {
+                    String propertyName = propertyMatcher.group(1);
+                    if (!ALLOWED_PROPERTIES.contains(propertyName)) {
+                        throw new IllegalStateException(
+                                String.format("Property name '%s' in file %s is not from the expected.",
+                                        propertyName, p));
                     }
+                }
 
-                    Matcher classMatcher = CLASS_TAG_PATTERN.matcher(chars);
-                    while (classMatcher.find()) {
-                        String tagName = classMatcher.group(1);
-                        String className = classMatcher.group(2);
-                        if ((!"java".equals(tagName) || !"java.beans.XMLDecoder".equals(className)) &&
-                                (!"object".equals(tagName) || !ALLOWED_CLASSES.contains(className)) &&
-                                "object".equals(tagName) && !className.startsWith(EXPECTED_PACKAGE)) {
-                                throw new RuntimeException(
-                                        String.format("Class name '%s' in file %s is not from the expected package.",
-                                                className, p));
-                        }
+                Matcher classMatcher = CLASS_TAG_PATTERN.matcher(chars);
+                while (classMatcher.find()) {
+                    String tagName = classMatcher.group(1);
+                    String className = classMatcher.group(2);
+                    if ((!"java".equals(tagName) || !"java.beans.XMLDecoder".equals(className)) &&
+                            (!"object".equals(tagName) || !ALLOWED_CLASSES.contains(className)) &&
+                            "object".equals(tagName) && !className.startsWith(EXPECTED_PACKAGE)) {
+                            throw new IllegalStateException(
+                                    String.format("Class name '%s' in file %s is not from the expected package.",
+                                            className, p));
                     }
+                }
 
-                    Matcher methodMatcher = METHOD_TAG_PATTERN.matcher(chars);
-                    while (methodMatcher.find()) {
-                        String methodName = methodMatcher.group(1);
-                        if (!ALLOWED_METHODS.contains(methodName)) {
-                            throw new RuntimeException(
-                                    String.format("Method name '%s' in file %s is not from the expected.",
-                                            methodName, p));
-                        }
+                Matcher methodMatcher = METHOD_TAG_PATTERN.matcher(chars);
+                while (methodMatcher.find()) {
+                    String methodName = methodMatcher.group(1);
+                    if (!ALLOWED_METHODS.contains(methodName)) {
+                        throw new IllegalStateException(
+                                String.format("Method name '%s' in file %s is not from the expected.",
+                                        methodName, p));
                     }
-                })) {
-            throw new Exception("Malformed segmentation.conf file is detected!");
-        }
+                }
+            });
     }
 
-    private static boolean checkFileContent(Path path, CharsetDecoder decoder,
+    private static ValidationResult checkFileContent(Path path, CharsetDecoder decoder,
                                         BiConsumer<Path, CharSequence> consumer) {
         try {
             byte[] bytes = Files.readAllBytes(path);
             CharBuffer chars = decoder.decode(ByteBuffer.wrap(bytes));
             consumer.accept(path, chars);
-            return true;
+            return ValidationResult.success();
         } catch (IOException ex) {
             LOGGER.error("Error occurred during file processing!", ex);
+            return ValidationResult.failure("Error occurred during file processing!");
+        } catch (IllegalStateException e) {
+            return ValidationResult.failure(e.getMessage());
         }
-        return false;
     }
 }
