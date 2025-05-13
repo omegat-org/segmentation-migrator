@@ -1,5 +1,6 @@
 plugins {
     application
+    jacoco
 }
 
 application {
@@ -32,6 +33,8 @@ tasks.named<Test>("test") {
 
 // Task to create a fat JAR
 val fatJar = tasks.register<Jar>("fatJar") {
+    group = "build"
+    description = "Build fatJar for user convenience."
     archiveClassifier.set("fat") // Optional: adds '-fat' to the JAR name
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
