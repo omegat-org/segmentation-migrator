@@ -1,7 +1,7 @@
 [versions]
 slf4j = "2.0.17"
 junit = "4.13.2"
-xjc = "2.3.9"
+xjc = "4.0.5"
 annotations = "26.0.2"
 jackson = "2.16.1"
 
