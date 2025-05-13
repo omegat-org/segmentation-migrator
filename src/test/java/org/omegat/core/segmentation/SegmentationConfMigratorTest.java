@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ConvertSrxConfTest {
+public class SegmentationConfMigratorTest {
     private static final String MALFORMED0 = "src/test/resources/segmentation/malformed0/segmentation.conf";
     private static final String MALFORMED1 = "src/test/resources/segmentation/malformed1/segmentation.conf";
 

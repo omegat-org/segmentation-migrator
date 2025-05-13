@@ -4,23 +4,26 @@ import org.omegat.util.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ConvertSrxConf {
+public class SegmentationConfMigrator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConvertSrxConf.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SegmentationConfMigrator.class);
 
     public static void main(String[] args) {
-        Path confFilePath = Paths.get(".").resolve(SRX.CONF_SENTSEG);
+        String targetDir = ".";
+        Path confFilePath = Paths.get(targetDir).resolve(SRX.CONF_SENTSEG);
+        Path srxFilePath = Paths.get(targetDir).resolve(SRX.SRX_SENTSEG);
         checkConfigFile(confFilePath);
-        convertToSrx(confFilePath);
+        convertToSrx(confFilePath, srxFilePath);
     }
 
     private static void checkConfigFile(Path configPath) {
         if (!configPath.toFile().exists()) {
-            LOGGER.error("File is not found!");
+            LOGGER.error("File " + SRX.CONF_SENTSEG + " is not found!");
             System.exit(1);
         }
         SegmentationConfValidator validator = new SegmentationConfValidator(configPath);
@@ -31,14 +34,14 @@ public class ConvertSrxConf {
         }
     }
 
-    private static void convertToSrx(Path configPath) {
+    private static void convertToSrx(Path configPath, Path srxFilePath) {
         try {
-            Path srxFilePath = Paths.get(".").resolve(SRX.SRX_SENTSEG);
             if (srxFilePath.toFile().exists()) {
                 Files.delete(srxFilePath);
             }
-            SRX srx = SRX.loadConfFile(configPath.toFile(), srxFilePath.getParent().toFile());
-            SRX.saveToSrx(srx, srxFilePath.getParent().toFile());
+            File srxParent = srxFilePath.getParent().toFile();
+            SRX srx = SRX.loadConfFile(configPath.toFile(), srxParent);
+            SRX.saveToSrx(srx, srxParent);
         } catch (Exception e) {
             LOGGER.error("Error occurred during conversion!", e);
             System.exit(1);
