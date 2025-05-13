@@ -3,7 +3,7 @@ slf4j = "2.0.17"
 junit = "4.13.2"
 xjc = "2.3.9"
 annotations = "26.0.2"
-jackson = "2.16.1"
+jackson = "2.19.0"
 
 [libraries]
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
