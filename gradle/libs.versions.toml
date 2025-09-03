@@ -2,7 +2,7 @@
 slf4j = "2.0.17"
 junit = "4.13.2"
 xjc = "2.3.9"
-annotations = "26.0.2"
+annotations = "26.0.2-1"
 jackson = "2.16.1"
 
 [libraries]
