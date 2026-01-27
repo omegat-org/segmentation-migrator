@@ -9,7 +9,7 @@ application {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.BIN
-    gradleVersion = "8.13"
+    gradleVersion = "9.3.0"
 }
 
 repositories {
