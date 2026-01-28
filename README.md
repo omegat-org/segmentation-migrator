@@ -36,8 +36,8 @@ Requirements:
 - (No separate Gradle install is required; the project includes the Gradle Wrapper.)
 
 Build:
-```aiignore
-bash ./gradlew clean build
+```bash
+./gradlew clean build
 ```
 
 This will produce:
@@ -46,7 +46,7 @@ This will produce:
 
 ### Run (fat JAR)
 
-Run the fat JAR from the directory that contains your OmegaT configuration (commonly `~/.omegat/`):
+Run the fat JAR from the directory that contains your OmegaT configuration (commonly `~/.omegat/` or `<translation project>/omegat/`):
 
 ### With fatJar file
 
@@ -66,7 +66,7 @@ cd ~/.omegat/
 ```
 
 On Windows, use the `.bat` launcher instead:
-```bat
+```cmd
 cd %USERPROFILE%/OmegaT
 <unpacked-dir>\bin\omegat-segmentation-migrator.bat
 ```
@@ -85,8 +85,8 @@ OmegaT **6.1 Beta** and **6.0.x** can use the new standard segmentation configur
 
 ## License
 
-OmegaT segmentation migrator -- Tool to migrate complex segmentation rule to SRX. 
-Copyright (C) 2025-2026 OmegaT project
+OmegaT segmentation migrator – Tool to migrate complex segmentation rule to SRX. 
+Copyright (C) 2025–2026 OmegaT project
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
