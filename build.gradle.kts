@@ -31,6 +31,12 @@ tasks.named<Test>("test") {
     useJUnit()
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 // Task to create a fat JAR
 val fatJar = tasks.register<Jar>("fatJar") {
     group = "build"
