@@ -1,10 +1,36 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     application
     jacoco
+    alias(libs.plugins.git.version) apply false
 }
 
 application {
     mainClass.set("org.omegat.core.segmentation.SegmentationConfMigrator")
+}
+
+val dotgit = project.file(".git")
+if (dotgit.exists()) {
+    apply(plugin = libs.plugins.git.version.get().pluginId)
+    val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+    val details = versionDetails()
+    val baseVersion = details.lastTag.substring(1)
+    version = when {
+        details.isCleanTag -> baseVersion
+        else -> baseVersion + "-" + details.commitDistance + "-" + details.gitHash + "-SNAPSHOT"
+    }
+} else {
+    val gitArchival = project.file(".git-archival.properties")
+    val props = Properties()
+    props.load(FileInputStream(gitArchival))
+    val versionDescribe = props.getProperty("describe")
+    val regex = "^v\\d+\\.\\d+\\.\\d+$".toRegex()
+    version = when {
+        regex.matches(versionDescribe) -> versionDescribe.substring(1)
+        else -> versionDescribe.substring(1) + "-SNAPSHOT"
+    }
 }
 
 tasks.wrapper {

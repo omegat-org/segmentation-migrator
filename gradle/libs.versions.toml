@@ -1,7 +1,6 @@
 [versions]
 slf4j = "2.0.17"
 junit = "4.13.2"
-xjc = "4.0.6"
 jackson = "2.21.0"
 jspecify = "1.0.0"
 
@@ -14,3 +13,6 @@ jackson-core = {group = "com.fasterxml.jackson.core", name = "jackson-core", ver
 jackson-databind = {group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson"}
 jackson-xml = {group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson"}
 jackson-jaxb = {group = "com.fasterxml.jackson.module", name = "jackson-module-jaxb-annotations", version.ref = "jackson"}
+
+[plugins]
+git-version = {id = "com.palantir.git-version", version = "4.2.0"}
