@@ -4,7 +4,7 @@ This is a small utility to migrate OmegaT segmentation configuration file format
 
 ## WARNING
 
-The utility is utilizing a vulnerable Java class, `java.beans.XMLDecoder`, which introduces significant security risks.
+The tool uses a vulnerable Java class, `java.beans.XMLDecoder`, which introduces significant security risks.
 Attackers can potentially exploit this vulnerability by crafting a malicious `segmentation.conf` file.
 
 This file could:
@@ -21,24 +21,82 @@ Even though checks, there is no perfect for protecting, so please don't use the 
 
 ## Usage
 
+### Prerequisites
+
+- **Java Runtime (JRE) 21+** is required to run the tool.  
+  If you don’t have Java installed, install a recent JDK/JRE from [Adoptium](https://adoptium.net/).
+
+### Building from source
+
+This project is primarily intended for **OmegaT team administrators / advanced users** (not typical end users).
+You build the tool yourself using Gradle.
+
+Requirements:
+- **JDK 21+**
+- (No separate Gradle install is required; the project includes the Gradle Wrapper.)
+
+Build:
+```aiignore
+bash ./gradlew clean build
+```
+
+This will produce:
+- a **fat JAR** under `build/libs/`
+- a **ZIP distribution** under `build/distributions/`
+
+### Run (fat JAR)
+
+Run the fat JAR from the directory that contains your OmegaT configuration (commonly `~/.omegat/`):
+
 ### With fatJar file
 
-```generic
+```bash
 cd ~/.omegat/
-java -jar ~/Downloads/omegat-segmentation-migrator-fat.jar
+java -jar <project dir>/build/libs/omegat-segmentation-migrator-fat.jar
 ```
 
-### With zip distribution
+### Run (ZIP distribution)
 
-```Generic
-cd ~/Downloads/
-unzip omegat-segmentation-migrator.zip 
+Unpack the distribution ZIP and run the launcher script.
+
+```bash
+unzip <project dir>/build/distributions/omegat-segmentation-migrator.zip 
 cd ~/.omegat/
-~/Downloads/omegat-segmentation-migrator/bin/omegat-segmentation-migrator.bat
+<unpacked-dir>/omegat-segmentation-migrator/bin/omegat-segmentation-migrator
 ```
 
-Once you got `segmentation.srx` file, OmegaT 6.1 Beta and 6.0.x will use new standard segmentation configuration file.
+On Windows, use the `.bat` launcher instead:
+```bat
+cd %USERPROFILE%/OmegaT
+<unpacked-dir>\bin\omegat-segmentation-migrator.bat
+```
+
+### When converting custom rule on the translation project
+
+```bash
+cd <translation project>/omegat/
+<unpacked-dir>/omegat-segmentation-migrator/bin/omegat-segmentation-migrator
+```
+
+### Output
+
+After a successful run, you should have a `segmentation.srx` file.
+OmegaT **6.1 Beta** and **6.0.x** can use the new standard segmentation configuration file.
 
 ## License
 
-GPL-3
+OmegaT segmentation migrator -- Tool to migrate complex segmentation rule to SRX. 
+Copyright (C) 2025-2026 OmegaT project
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
