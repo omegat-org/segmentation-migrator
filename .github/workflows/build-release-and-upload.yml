@@ -1,0 +1,52 @@
+name: Create release and upload asset
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  build:
+    name: Create Release and Upload Asset
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: Get the version
+      id: get_version
+      run: |
+        REV_COUNT=`git rev-list --count HEAD`
+        echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
+    - uses: gradle/gradle-build-action@v3
+      name: Setup Gradle
+      id: setup-gradle
+    - name: Build and check
+      run: ./gradlew -PenvIsCi=true build
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release v${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+    - name: Upload FatJar to Release
+      uses: svenstaro/upload-release-action@7f93926b6eec9cfdde9a8dfac51a4e23370b7c8e # v2.11.3
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/libs/omegat-segmentation-migrator-${{ steps.get_version.outputs.VERSION }}-fat.jar
+        tag: ${{ github.ref }}
+    - name: Upload ZIP to Release
+      uses: svenstaro/upload-release-action@7f93926b6eec9cfdde9a8dfac51a4e23370b7c8e # v2.11.3
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/distributions/omegat-segmentation-migrator-${{ steps.get_version.outputs.VERSION }}.zip
+        tag: ${{ github.ref }}
