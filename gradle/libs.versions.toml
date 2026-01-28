@@ -2,15 +2,14 @@
 slf4j = "2.0.17"
 junit = "4.13.2"
 xjc = "4.0.6"
-annotations = "26.0.2"
 jackson = "2.21.0"
+jspecify = "1.0.0"
 
 [libraries]
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
 slf4j-simple = {group = "org.slf4j", name = "slf4j-simple",  version.ref = "slf4j"}
 junit4 = {group = "junit", name = "junit", version.ref = "junit"}
-jetbrains-annotations = {group = "org.jetbrains", name = "annotations", version.ref = "annotations"}
-jaxb-xjc = {group = "org.glassfish.jaxb", name = "jaxb-xjc", version.ref = "xjc"}
+jspecify-annotations = {group = "org.jspecify", name = "jspecify", version.ref = "jspecify"}
 jackson-core = {group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson"}
 jackson-databind = {group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson"}
 jackson-xml = {group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson"}

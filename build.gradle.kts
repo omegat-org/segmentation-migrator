@@ -18,12 +18,12 @@ repositories {
 
 dependencies {
     implementation(libs.slf4j.api)
-    implementation(libs.slf4j.simple)
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.xml)
     implementation(libs.jackson.jaxb)
-    implementation(libs.jetbrains.annotations)
+    implementation(libs.jspecify.annotations)
+    runtimeOnly(libs.slf4j.simple)
     testImplementation(libs.junit4)
 }
 
