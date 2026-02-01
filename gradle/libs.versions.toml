@@ -15,4 +15,4 @@ jackson-xml = {group = "com.fasterxml.jackson.dataformat", name = "jackson-dataf
 jackson-jaxb = {group = "com.fasterxml.jackson.module", name = "jackson-module-jaxb-annotations", version.ref = "jackson"}
 
 [plugins]
-git-version = {id = "com.palantir.git-version", version = "4.2.0"}
+git-version = {id = "com.palantir.git-version", version = "4.3.0"}
