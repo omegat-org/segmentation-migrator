@@ -26,10 +26,12 @@
 
 package org.omegat.core.segmentation;
 
-import org.omegat.util.OStrings;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Code-Key mappings for segmentation code.
@@ -40,7 +42,30 @@ import java.util.Map;
  */
 public final class LanguageCodes {
 
-    private LanguageCodes() {
+    private static final String BASENAME = "org/omegat/Bundle";
+
+    private static @Nullable LanguageCodes instance;
+
+    public static void init(Locale locale) {
+        if (instance == null) {
+            instance = new LanguageCodes(locale);
+        }
+    }
+
+    public static LanguageCodes getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException();
+        }
+        return instance;
+    }
+
+    /**
+     * Resource bundle that contains all the strings
+     */
+    private ResourceBundle bundle;
+
+    private LanguageCodes(Locale locale) {
+        bundle = ResourceBundle.getBundle(BASENAME, locale);
     }
 
     // Codes of "languagerulename".
@@ -99,7 +124,9 @@ public final class LanguageCodes {
     private static final String SLOVAK_PATTERN = "SK.*";
     private static final String CHINESE_PATTERN = "ZH.*";
 
-    /** A Map from language codes to language keys. */
+    /**
+     * A Map from language codes to language keys.
+     */
     private static final Map<String, String> codeKeyHash = new HashMap<>();
     private static final Map<String, String> patternHash = new HashMap<>();
 
@@ -142,27 +169,26 @@ public final class LanguageCodes {
     /**
      * Returns localized language name for a given language code.
      *
-     * @param code
-     *            language code
+     * @param code language code
      */
-    public static String getLanguageName(String code) {
+    public String getLanguageName(String code) {
         if (!codeKeyHash.containsKey(code)) {
             return code;
         }
         String key = codeKeyHash.get(code);
-        return OStrings.getString(key);
+        return bundle.getString(key);
     }
 
     public static boolean isLanguageCodeKnown(String code) {
         return codeKeyHash.containsKey(code);
     }
 
-    public static String getLanguageCodeByName(String name) {
+    public @Nullable String getLanguageCodeByName(@Nullable String name) {
         if (name == null) {
             return null;
         }
         for (Map.Entry<String, String> entry : codeKeyHash.entrySet()) {
-            if (OStrings.getString(entry.getValue()).equals(name)) {
+            if (bundle.getString(entry.getValue()).equals(name)) {
                 return entry.getKey();
             }
         }
@@ -175,7 +201,7 @@ public final class LanguageCodes {
         return null;
     }
 
-    public static String getLanguageCodeByPattern(String pattern) {
+    public @Nullable String getLanguageCodeByPattern(String pattern) {
         return patternHash.get(pattern);
     }
 }

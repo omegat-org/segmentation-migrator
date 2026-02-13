@@ -27,6 +27,7 @@
 package org.omegat.core.segmentation;
 
 import gen.core.segmentation.Languagemap;
+import org.omegat.core.segmentation.util.LanguageCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,7 @@ public class MapRule implements Serializable {
      *            segmentation rules.
      */
     public MapRule(String language, String pattern, List<Rule> rules) {
-        String code = LanguageCodes.getLanguageCodeByPattern(pattern);
+        String code = LanguageCodes.getInstance().getLanguageCodeByPattern(pattern);
         this.setLanguage(code != null ? code : language);
         this.setPattern(pattern);
         this.setRules(rules);
@@ -108,7 +109,7 @@ public class MapRule implements Serializable {
          * to remove the workaround here.
          */
         if (!LanguageCodes.isLanguageCodeKnown(code)) {
-            String alt = LanguageCodes.getLanguageCodeByName(code);
+            String alt = LanguageCodes.getInstance().getLanguageCodeByName(code);
             if (alt != null) {
                 languageCode = alt;
                 return;
@@ -196,11 +197,11 @@ public class MapRule implements Serializable {
     /**
      * Indicates whether some other MapRule is "equal to" this one.
      */
+    @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof MapRule)) {
+        if (!(obj instanceof MapRule that)) {
             return false;
         }
-        MapRule that = (MapRule) obj;
         return this.getPattern().equals(that.getPattern()) && this.getLanguage().equals(that.getLanguage())
                 && this.getRules().equals(that.getRules());
     }
@@ -208,6 +209,7 @@ public class MapRule implements Serializable {
     /**
      * Returns a hash code value for the object.
      */
+    @Override
     public int hashCode() {
         return this.getPattern().hashCode() + this.getLanguage().hashCode() + this.getRules().hashCode();
     }

@@ -121,9 +121,9 @@ public class SRX implements Serializable {
             Languagemap map = new Languagemap();
             String pattern = mr.getPattern();
             // we use standard name
-            String language = LanguageCodes.getLanguageCodeByPattern(pattern);
+            String language = LanguageCodes.getInstance().getLanguageCodeByPattern(pattern);
             if (language == null) {
-                language = LanguageCodes.getLanguageCodeByName(mr.getLanguage());
+                language = LanguageCodes.getInstance().getLanguageCodeByName(mr.getLanguage());
             }
             if (language == null) {
                 language = mr.getLanguage();
