@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+* Update README.md to warn the tool depends on running locale
+* Refactor locale to be dynamic
+* Bump Gradle Wrapper@9.3.1
+* Bump gradle-develocity@4.3.2
 
 ## [v0.2.0]
 * Update README.md to explain usage
