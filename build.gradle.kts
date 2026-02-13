@@ -35,7 +35,7 @@ if (dotgit.exists()) {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.BIN
-    gradleVersion = "9.3.0"
+    gradleVersion = libs.versions.gradle.get()
 }
 
 repositories {
