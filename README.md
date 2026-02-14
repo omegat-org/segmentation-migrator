@@ -26,10 +26,10 @@ Even though checks, there is no perfect for protecting, so please don't use the 
 - **Java Runtime (JRE) 21+** is required to run the tool.  
   If you don’t have Java installed, install a recent JDK/JRE from [Adoptium](https://adoptium.net/).
 
-### Locale matters (important)
+### Locale matters
 
 OmegaT’s legacy segmentation file (`segmentation.conf`) may be **locale-dependent**.  
-To avoid conversion errors, run this migration tool using the **same locale that was used when the `segmentation.conf` file was created/edited**.
+To avoid conversion errors, you are recommend to provide the **locale that was used when the `segmentation.conf` file was created/edited**.
 
 If you convert the file under a different locale, the migration can **fail** or produce **unexpected results**.
 
