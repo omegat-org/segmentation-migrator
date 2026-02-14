@@ -66,61 +66,40 @@ dependencies {
 }
 
 // --- JAXB / XJC codegen ---
-val schemaSourcePath = layout.projectDirectory.dir("src/main/resources/schema") // adjust if needed
 val generatedRoot = layout.buildDirectory.dir("generated/sources/jaxb/main/java")
+val schemaSourcePath = layout.projectDirectory.dir("src/main/resources/schema")
 
-val genJaxb = tasks.register("genJAXB") {
-    description = "Generate classes for loading and manipulating XML formats"
+val xjcTask = tasks.register<JavaExec>("genSegmentation") {
     group = "jaxb"
-    outputs.dir(generatedRoot)
-    doFirst {
-        generatedRoot.get().asFile.mkdirs()
-    }
-}
+    description = "Run XJC for srx20.xsd"
+    classpath = jaxb
+    mainClass.set("com.sun.tools.xjc.XJCFacade")
 
-fun registerXjcTask(
-    name: String,
-    outDirRelativeToGeneratedRoot: String,
-    xjcArgs: List<String>,
-) {
-    val taskName = "gen" + name.replaceFirstChar { it.uppercaseChar() }
-    val xjcTask = tasks.register<JavaExec>(taskName) {
-        group = "jaxb"
-        description = "Run XJC for $name"
+    val outDir = generatedRoot.map { it.dir("gen/core/segmentation").asFile }
+    outputs.dir(outDir)
 
-        classpath = jaxb
-        mainClass.set("com.sun.tools.xjc.XJCFacade")
-
-        val outDir = generatedRoot.map { it.dir(outDirRelativeToGeneratedRoot).asFile }
-        outputs.dir(outDir)
-
-        // Make it easy to run locally and in CI
-        doFirst { outDir.get().mkdirs() }
-
-        args(xjcArgs)
-    }
-    genJaxb.configure { dependsOn(xjcTask) }
-}
-
-// Example schema task (mirrors your Groovy DSL example)
-registerXjcTask(
-    name = "segmentation",
-    outDirRelativeToGeneratedRoot = "gen/core/segmentation",
-    xjcArgs = listOf(
+    // Make it easy to run locally and in CI
+    doFirst { outDir.get().mkdirs() }
+    val xjcArgs = listOf(
         "-no-header",
         "-npa",
         "-d", generatedRoot.get().asFile.absolutePath,
         "-p", "gen.core.segmentation",
         schemaSourcePath.file("srx20.xsd").asFile.absolutePath,
     )
-)
+    args(xjcArgs)
+    doFirst {
+        generatedRoot.get().asFile.mkdirs()
+    }
+}
 
 // Add generated sources to main compilation + wire task dependency
 the<SourceSetContainer>().named("main") {
     java.srcDir(generatedRoot)
 }
+
 tasks.named<JavaCompile>("compileJava") {
-    dependsOn(genJaxb)
+    dependsOn(xjcTask)
 }
 
 tasks.named<Test>("test") {
