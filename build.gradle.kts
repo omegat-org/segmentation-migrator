@@ -8,7 +8,7 @@ plugins {
 }
 
 application {
-    mainClass.set("org.omegat.core.segmentation.SegmentationConfMigrator")
+    mainClass.set("org.omegat.core.segmentation.util.SegmentationConfMigrator")
 }
 
 val dotgit = project.file(".git")
