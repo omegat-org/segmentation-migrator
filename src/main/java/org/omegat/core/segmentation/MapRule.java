@@ -26,9 +26,11 @@
 
 package org.omegat.core.segmentation;
 
+import gen.core.segmentation.Languagemap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class MapRule implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -5868132953113679291L;
     private static final Logger LOGGER = LoggerFactory.getLogger(MapRule.class);
 
@@ -60,11 +63,10 @@ public class MapRule implements Serializable {
     }
 
     /**
-     * Create initialized MapRule object.
+     * Create initialized MapRule object from segmentation.conf.
      * 
      * @param language
-     *            localized language name (from segmentation.conf), or language
-     *            code (from SRX)
+     *            localized language name from segmentation.conf.
      * @param pattern
      *            language pattern such as "EN.*" or ".*"
      * @param rules
@@ -77,21 +79,18 @@ public class MapRule implements Serializable {
         this.setRules(rules);
     }
 
-    /** Returns Language Name (to display it in a dialog). */
-    public String getLanguageName() {
-        /*
-         * When there has already migrated a SRX file store, languageCode fields
-         * has a name defined as "LanguageCodes.*_CODE". Otherwise, MapRule
-         * object is created from "segmentation.conf" java beans file, so it is
-         * localized name of language. We first assume the latter. If res is
-         * empty, the object is created from a SRX file, then return
-         * languageCode itself.
-         */
-        String res = LanguageCodes.getLanguageName(languageCode);
-        if (res == null || res.isEmpty()) {
-            res = languageCode;
-        }
-        return res;
+    /**
+     * Create initialized MapRule object from segmentation.srx.
+     *
+     * @param languagemap
+     *            language map from segmentation.srx.
+     * @param rules
+     *            segmentation rules.
+     */
+    public MapRule(Languagemap languagemap, List<Rule> rules) {
+        this.setLanguage(languagemap.getLanguagerulename());
+        this.setPattern(languagemap.getLanguagepattern());
+        this.setRules(rules);
     }
 
     /** Sets Language Code */
