@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -124,6 +123,11 @@ public class MapRule implements Serializable {
      * Returns Language Code for programmatic usage.
      */
     public String getLanguage() {
+        // determine a language from the pattern to avoid localized code
+        String code = LanguageCodes.getInstance().getLanguageCodeByPattern(getPattern());
+        if (code != null) {
+            return code;
+        }
         return languageCode;
     }
 
@@ -142,14 +146,6 @@ public class MapRule implements Serializable {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Returns Compiled Pattern for the language/country ISO code (of a form
-     * LL-CC).
-     */
-    public Pattern getCompiledPattern() {
-        return pattern;
     }
 
     /**
@@ -174,10 +170,7 @@ public class MapRule implements Serializable {
         MapRule result = new MapRule();
         result.languageCode = languageCode;
         result.pattern = pattern;
-        result.rules = new ArrayList<Rule>(rules.size());
-        for (Rule rule : rules) {
-            result.rules.add(rule.copy());
-        }
+        result.rules = rules.stream().map(Rule::copy).toList();
         return result;
     }
 

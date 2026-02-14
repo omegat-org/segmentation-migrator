@@ -81,6 +81,13 @@ public class SegmentationConfMigratorTest {
         testSrxMigration(segmentConf, configDir, Locale.of("nl"), 19);
     }
 
+    @Test
+    public void testSrxMigrationCustomWithWrongLocale() throws Exception {
+        File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_nl_custom", "segmentation.conf").toFile();
+        File configDir = folder.newFolder();
+        testSrxMigration(segmentConf, configDir, Locale.of("ja"), 19);
+    }
+
     /**
      * Test SRX writer/reader.
      * <p>
