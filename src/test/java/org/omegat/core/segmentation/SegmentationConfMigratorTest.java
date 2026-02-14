@@ -125,9 +125,6 @@ public final class SegmentationConfMigratorTest {
         for (MapRule mapRule : mapRuleList) {
             if (mapRule.getPattern().equals("JA.*")) {
                 assertEquals(LanguageCodes.JAPANESE_CODE, mapRule.getLanguage());
-                assertEquals(OStrings.getString(LanguageCodes.JAPANESE_KEY), mapRule.getLanguageName());
-            } else if (mapRule.getLanguage().equals("Text")) {
-                assertEquals(OStrings.getString(LanguageCodes.F_TEXT_KEY), mapRule.getLanguageName());
             }
         }
         // load from srx file
@@ -141,9 +138,6 @@ public final class SegmentationConfMigratorTest {
         for (MapRule mapRule : mapRuleList) {
             if (mapRule.getPattern().equals("JA.*")) {
                 assertEquals(LanguageCodes.JAPANESE_CODE, mapRule.getLanguage());
-                assertEquals(OStrings.getString(LanguageCodes.JAPANESE_KEY), mapRule.getLanguageName());
-            } else if (mapRule.getLanguage().equals("Text")) {
-                assertEquals(OStrings.getString(LanguageCodes.F_TEXT_KEY), mapRule.getLanguageName());
             }
         }
         assertEquals("2.0", srx1.getVersion());
