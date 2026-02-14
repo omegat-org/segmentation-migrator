@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.omegat.util.SRXUtils;
 import org.omegat.util.ValidationResult;
 
 import java.io.File;
@@ -107,7 +108,7 @@ public final class SegmentationConfMigratorTest {
         // load from srx file
         assertTrue(segmentSrx.exists());
         assertTrue(segmentSrx.isFile());
-        SRX srx1 = SRX.loadSrxFile(segmentSrx.toURI());
+        SRX srx1 = SRXUtils.loadSrxFile(segmentSrx.toURI());
         assertNotNull(srx1);
         mapRuleList = srx1.getMappingRules();
         assertNotNull(mapRuleList);
