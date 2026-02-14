@@ -55,6 +55,15 @@ public class SegmentationConfMigrator {
     public static void main(String[] args) {
         String targetDir = ".";
         Locale locale = Locale.getDefault();
+        for (String arg : args) {
+            if (arg.startsWith("--locale=")) {
+                String localeStr = arg.substring("--locale=".length());
+                locale = Locale.forLanguageTag(localeStr.replace('_', '-'));
+            } else if (!arg.startsWith("-")) {
+                targetDir = arg;
+            }
+        }
+        //
         Path confFilePath = Paths.get(targetDir).resolve(SRXUtils.CONF_SENTSEG);
         Path srxFilePath = Paths.get(targetDir).resolve(SRXUtils.SRX_SENTSEG);
         ValidationResult validationResult = checkConfigFile(confFilePath);
@@ -102,7 +111,7 @@ public class SegmentationConfMigrator {
         try (XMLDecoder xmldec = new XMLDecoder(new FileInputStream(configFile), null, myel, SRX.class.getClassLoader())) {
             res = (SRX) xmldec.readObject();
         }
-        if (myel.isExceptionOccurred()) {
+        if (myel.isExceptionOccured()) {
             StringBuilder sb = new StringBuilder();
             for (Exception ex : myel.getExceptionsList()) {
                 sb.append("    ");
@@ -130,7 +139,7 @@ public class SegmentationConfMigrator {
         /**
          * Returns whether any exceptions occured.
          */
-        public boolean isExceptionOccurred() {
+        public boolean isExceptionOccured() {
             return exceptionOccurred;
         }
 

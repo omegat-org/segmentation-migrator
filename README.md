@@ -58,8 +58,7 @@ Run the fat JAR from the directory that contains your OmegaT configuration (comm
 ### With fatJar file
 
 ```bash
-cd ~/.omegat/
-java -jar <project dir>/build/libs/omegat-segmentation-migrator-fat.jar
+java -jar <project dir>/build/libs/omegat-segmentation-migrator-fat.jar --locale=nl ~/.omegat
 ```
 
 ### Run (ZIP distribution)
@@ -68,21 +67,18 @@ Unpack the distribution ZIP and run the launcher script.
 
 ```bash
 unzip <project dir>/build/distributions/omegat-segmentation-migrator.zip 
-cd ~/.omegat/
-<unpacked-dir>/omegat-segmentation-migrator/bin/omegat-segmentation-migrator
+<unpacked-dir>/omegat-segmentation-migrator/bin/omegat-segmentation-migrator --locale=nl ~/.omegat
 ```
 
 On Windows, use the `.bat` launcher instead:
 ```cmd
-cd %USERPROFILE%/OmegaT
-<unpacked-dir>\bin\omegat-segmentation-migrator.bat
+<unpacked-dir>\bin\omegat-segmentation-migrator.bat --locale=nl %USERPROFILE%/OmegaT
 ```
 
 ### When converting custom rule on the translation project
 
 ```bash
-cd <translation project>/omegat/
-<unpacked-dir>/omegat-segmentation-migrator/bin/omegat-segmentation-migrator
+unpacked-dir>/omegat-segmentation-migrator/bin/omegat-segmentation-migrator --locale=nl <translation project>/omegat/
 ```
 
 ### Output
