@@ -27,6 +27,7 @@
 package org.omegat.core.segmentation;
 
 import gen.core.segmentation.Languagemap;
+import org.omegat.core.segmentation.util.LanguageCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

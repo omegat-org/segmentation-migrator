@@ -1,8 +1,31 @@
-package org.omegat.core.segmentation;
+/*
+ OmegaT - Computer Assisted Translation (CAT) tool
+          with fuzzy matching, translation memory, keyword search,
+          glossaries, and translation leveraging into updated projects.
+
+ Copyright (C) 2025-2026 Hiroshi Miura
+               Home page: https://www.omegat.org/
+               Support center: https://omegat.org/support
+
+ This file is part of OmegaT.
+
+ OmegaT is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ OmegaT is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package org.omegat.core.segmentation.util;
 
 import org.jspecify.annotations.Nullable;
-import org.omegat.util.SRXUtils;
-import org.omegat.util.ValidationResult;
+import org.omegat.core.segmentation.SRX;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +42,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * The SegmentationConfMigrator class is responsible for migrating sentence segmentation
+ * configuration data from the legacy configuration file format to a new SRX-based format.
+ * It performs validation of the configuration file and conversion to the new SRX format.
+ *
  * @author Hiroshi Miura
  */
 public class SegmentationConfMigrator {
@@ -27,6 +54,7 @@ public class SegmentationConfMigrator {
 
     public static void main(String[] args) {
         String targetDir = ".";
+        Locale locale = Locale.getDefault();
         Path confFilePath = Paths.get(targetDir).resolve(SRXUtils.CONF_SENTSEG);
         Path srxFilePath = Paths.get(targetDir).resolve(SRXUtils.SRX_SENTSEG);
         ValidationResult validationResult = checkConfigFile(confFilePath);
@@ -34,8 +62,7 @@ public class SegmentationConfMigrator {
             LOGGER.error(validationResult.getErrorMessage());
             System.exit(2);
         }
-        LanguageCodes.setLocale(Locale.getDefault());
-        SRX srx = convertToSrx(confFilePath, srxFilePath);
+        SRX srx = convertToSrx(confFilePath, srxFilePath, locale);
         if (srx == null) {
             System.exit(1);
         }
@@ -49,12 +76,13 @@ public class SegmentationConfMigrator {
         return validator.validate();
     }
 
-    static @Nullable SRX convertToSrx(Path configPath, Path srxFilePath) {
+    static @Nullable SRX convertToSrx(Path configPath, Path srxFilePath, Locale locale) {
         try {
             if (srxFilePath.toFile().exists()) {
                 Files.delete(srxFilePath);
             }
             File srxParent = srxFilePath.getParent().toFile();
+            LanguageCodes.setLocale(locale);
             SRX srx = loadConfFile(configPath.toFile());
             SRXUtils.saveToSrx(srx, srxParent);
             return srx;
