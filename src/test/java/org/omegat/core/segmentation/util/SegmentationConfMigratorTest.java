@@ -1,10 +1,9 @@
-/**************************************************************************
+/*
  OmegaT - Computer Assisted Translation (CAT) tool
           with fuzzy matching, translation memory, keyword search,
           glossaries, and translation leveraging into updated projects.
 
- Copyright (C) 2016 Aaron Madlon-Kay
-               2024 Hiroshi Miura
+ Copyright (C) 2024-2026 Hiroshi Miura
                Home page: https://www.omegat.org/
                Support center: https://omegat.org/support
 
@@ -22,21 +21,22 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **************************************************************************/
+ */
 
-package org.omegat.core.segmentation;
+package org.omegat.core.segmentation.util;
 
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.omegat.util.SRXUtils;
-import org.omegat.util.ValidationResult;
+import org.omegat.core.segmentation.MapRule;
+import org.omegat.core.segmentation.SRX;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -46,36 +46,46 @@ import static org.junit.Assert.assertTrue;
  * @author Aaron Madlon-Kay
  * @author Hiroshi Miura
  */
-@RunWith(Enclosed.class)
-public final class SegmentationConfMigratorTest {
+public class SegmentationConfMigratorTest {
 
     private static final String SEGMENT_CONF_BASE = "src/test/resources/segmentation/";
 
-    @org.junit.Rule
+    @Rule
     public final TemporaryFolder folder = TemporaryFolder.builder().assureDeletion().build();
 
     @Test
     public void testSrxMigration() throws Exception {
         File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_en", "segmentation.conf").toFile();
         File configDir = folder.newFolder();
-        LanguageCodes.setLocale(Locale.of("en"));
-        SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
+        testSrxMigration(segmentConf, configDir, Locale.of("en"), 18);
     }
 
     @Test
     public void testSrxMigrationJa() throws Exception {
         File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_ja", "segmentation.conf").toFile();
         File configDir = folder.newFolder();
-        LanguageCodes.setLocale(Locale.of("ja"));
-        SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
+        testSrxMigration(segmentConf, configDir, Locale.of("ja"), 18);
     }
 
     @Test
     public void testSrxMigrationOldDe() throws Exception {
         File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_de_54", "segmentation.conf").toFile();
         File configDir = folder.newFolder();
-        LanguageCodes.setLocale(Locale.of("de"));
-        SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
+        testSrxMigration(segmentConf, configDir, Locale.of("de"), 18);
+    }
+
+    @Test
+    public void testSrxMigrationCustomNl() throws Exception {
+        File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_nl_custom", "segmentation.conf").toFile();
+        File configDir = folder.newFolder();
+        testSrxMigration(segmentConf, configDir, Locale.of("nl"), 19);
+    }
+
+    @Test
+    public void testSrxMigrationCustomWithWrongLocale() throws Exception {
+        File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_nl_custom", "segmentation.conf").toFile();
+        File configDir = folder.newFolder();
+        testSrxMigration(segmentConf, configDir, Locale.of("ja"), 19);
     }
 
     /**
@@ -88,41 +98,32 @@ public final class SegmentationConfMigratorTest {
      * a segmentation.conf file that is produced by OmegaT in English
      * environment and Japanese environment.
      */
-    public static void testSrxMigration(File segmentConf, File configDir) {
+    private void testSrxMigration(File segmentConf, File configDir, Locale locale, int ruleNum) throws IOException {
         File segmentSrx = new File(configDir, "segmentation.srx");
         // load from conf file
         assertTrue(segmentConf.exists());
         assertTrue(segmentConf.isFile());
         ValidationResult result = SegmentationConfMigrator.checkConfigFile(segmentConf.toPath());
         assertTrue(result.isValid());
-        SRX srxOrig = SegmentationConfMigrator.convertToSrx(segmentConf.toPath(), segmentSrx.toPath());
+        SRX srxOrig = SegmentationConfMigrator.convertToSrx(segmentConf.toPath(), segmentSrx.toPath(), locale);
         assertNotNull(srxOrig);
         List<MapRule> mapRuleList = srxOrig.getMappingRules();
         assertNotNull(mapRuleList);
-        assertEquals(18, mapRuleList.size());
-        for (MapRule mapRule : mapRuleList) {
-            if (mapRule.getPattern().equals("JA.*")) {
-                assertEquals(LanguageCodes.JAPANESE_CODE, mapRule.getLanguage());
-            }
+        assertEquals(ruleNum, mapRuleList.size());
+        assertTrue(srxOrig.isCascade());
+        assertTrue(srxOrig.isSegmentSubflows());
+        assertTrue(checkRules(mapRuleList, "JA.*", LanguageCodes.JAPANESE_CODE));
+        if (ruleNum > 18) {
+            assertTrue(checkRules(mapRuleList, "EN-GB", "IFAF-Engels"));
         }
-        // load from srx file
-        assertTrue(segmentSrx.exists());
-        assertTrue(segmentSrx.isFile());
-        SRX srx1 = SRXUtils.loadSrxFile(segmentSrx.toURI());
-        assertNotNull(srx1);
-        mapRuleList = srx1.getMappingRules();
-        assertNotNull(mapRuleList);
-        assertEquals(18, mapRuleList.size());
-        for (MapRule mapRule : mapRuleList) {
-            if (mapRule.getPattern().equals("JA.*")) {
-                assertEquals(LanguageCodes.JAPANESE_CODE, mapRule.getLanguage());
-            }
-        }
-        assertEquals("2.0", srx1.getVersion());
-        assertTrue(srx1.isCascade());
-        assertTrue(srx1.isSegmentSubflows());
+        assertEquals("2.0", srxOrig.getVersion());
     }
 
-    private SegmentationConfMigratorTest() {
+    private boolean checkRules(List<MapRule> mapRuleList, String pattern, String language) {
+        return mapRuleList.stream()
+                .filter(mapRule -> Objects.equals(language, mapRule.getLanguage()))
+                .map(mapRule -> Objects.equals(pattern, mapRule.getPattern()))
+                .findFirst()
+                .orElse(false);
     }
 }

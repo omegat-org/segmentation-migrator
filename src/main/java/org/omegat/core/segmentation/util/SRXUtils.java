@@ -26,7 +26,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.omegat.util;
+package org.omegat.core.segmentation.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -41,7 +41,6 @@ import gen.core.segmentation.Languagerule;
 import gen.core.segmentation.ObjectFactory;
 import gen.core.segmentation.Srx;
 import org.jspecify.annotations.Nullable;
-import org.omegat.core.segmentation.LanguageCodes;
 import org.omegat.core.segmentation.MapRule;
 import org.omegat.core.segmentation.Rule;
 import org.omegat.core.segmentation.SRX;

@@ -22,7 +22,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.omegat.util;
+package org.omegat.core.segmentation.util;
 
 import org.junit.Assert;
 import org.junit.Test;

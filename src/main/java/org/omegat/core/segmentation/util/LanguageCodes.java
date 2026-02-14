@@ -1,10 +1,11 @@
-/**************************************************************************
+/*
  OmegaT - Computer Assisted Translation (CAT) tool
           with fuzzy matching, translation memory, keyword search,
           glossaries, and translation leveraging into updated projects.
 
  Copyright (C) 2000-2006 Keith Godfrey and Maxym Mykhalchuk
                2009 Didier Briel
+               2024-2026 Hiroshi Miura
                Home page: https://www.omegat.org/
                Support center: https://omegat.org/support
 
@@ -22,11 +23,12 @@
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **************************************************************************/
+ */
 
-package org.omegat.core.segmentation;
+package org.omegat.core.segmentation.util;
 
 import org.jspecify.annotations.Nullable;
+import org.omegat.core.segmentation.MapRule;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -173,19 +175,6 @@ public final class LanguageCodes {
         patternHash.put(SWEDISH_PATTERN, SWEDISH_CODE);
         patternHash.put(SLOVAK_PATTERN, SLOVAK_CODE);
         patternHash.put(CHINESE_PATTERN, CHINESE_CODE);
-    }
-
-    /**
-     * Returns localized language name for a given language code.
-     *
-     * @param code language code
-     */
-    public String getLanguageName(String code) {
-        if (!codeKeyHash.containsKey(code)) {
-            return code;
-        }
-        String key = codeKeyHash.get(code);
-        return bundle.getString(key);
     }
 
     public static boolean isLanguageCodeKnown(String code) {

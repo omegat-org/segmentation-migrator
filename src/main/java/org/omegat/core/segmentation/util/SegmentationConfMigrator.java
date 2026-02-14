@@ -1,8 +1,30 @@
-package org.omegat.core.segmentation;
+/*
+ OmegaT - Computer Assisted Translation (CAT) tool
+          with fuzzy matching, translation memory, keyword search,
+          glossaries, and translation leveraging into updated projects.
 
-import org.jspecify.annotations.Nullable;
-import org.omegat.util.SRXUtils;
-import org.omegat.util.ValidationResult;
+ Copyright (C) 2025-2026 Hiroshi Miura
+               Home page: https://www.omegat.org/
+               Support center: https://omegat.org/support
+
+ This file is part of OmegaT.
+
+ OmegaT is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ OmegaT is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package org.omegat.core.segmentation.util;
+
+import org.omegat.core.segmentation.SRX;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +41,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * The SegmentationConfMigrator class is responsible for migrating sentence segmentation
+ * configuration data from the legacy configuration file format to a new SRX-based format.
+ * It performs validation of the configuration file and conversion to the new SRX format.
+ *
  * @author Hiroshi Miura
  */
 public class SegmentationConfMigrator {
@@ -27,18 +53,37 @@ public class SegmentationConfMigrator {
 
     public static void main(String[] args) {
         String targetDir = ".";
+        Locale locale = Locale.getDefault();
+        for (String arg : args) {
+            if (arg.startsWith("--locale=")) {
+                String localeStr = arg.substring("--locale=".length());
+                locale = Locale.forLanguageTag(localeStr.replace('_', '-'));
+            } else if (!arg.startsWith("-")) {
+                targetDir = arg;
+            }
+        }
+        //
         Path confFilePath = Paths.get(targetDir).resolve(SRXUtils.CONF_SENTSEG);
         Path srxFilePath = Paths.get(targetDir).resolve(SRXUtils.SRX_SENTSEG);
+        int status = doConvert(confFilePath, srxFilePath, locale);
+        System.exit(status);
+    }
+
+    static int doConvert(Path confFilePath, Path srxFilePath, Locale locale) {
         ValidationResult validationResult = checkConfigFile(confFilePath);
         if (!validationResult.isValid()) {
             LOGGER.error(validationResult.getErrorMessage());
-            System.exit(2);
+            return 2;
         }
-        LanguageCodes.setLocale(Locale.getDefault());
-        SRX srx = convertToSrx(confFilePath, srxFilePath);
-        if (srx == null) {
-            System.exit(1);
+        try {
+            SRX srx = convertToSrx(confFilePath, srxFilePath, locale);
+            File srxParent = srxFilePath.getParent().toFile();
+            SRXUtils.saveToSrx(srx, srxParent);
+        } catch (Exception e) {
+            LOGGER.error("Error occurred during conversion!", e);
+            return 1;
         }
+        return 0;
     }
 
     static ValidationResult checkConfigFile(Path configPath) {
@@ -49,19 +94,12 @@ public class SegmentationConfMigrator {
         return validator.validate();
     }
 
-    static @Nullable SRX convertToSrx(Path configPath, Path srxFilePath) {
-        try {
-            if (srxFilePath.toFile().exists()) {
-                Files.delete(srxFilePath);
-            }
-            File srxParent = srxFilePath.getParent().toFile();
-            SRX srx = loadConfFile(configPath.toFile());
-            SRXUtils.saveToSrx(srx, srxParent);
-            return srx;
-        } catch (Exception e) {
-            LOGGER.error("Error occurred during conversion!", e);
+    static SRX convertToSrx(Path configPath, Path srxFilePath, Locale locale) throws IOException {
+        if (srxFilePath.toFile().exists()) {
+            Files.delete(srxFilePath);
         }
-        return null;
+        LanguageCodes.setLocale(locale);
+        return loadConfFile(configPath.toFile());
     }
 
     /**
@@ -74,7 +112,7 @@ public class SegmentationConfMigrator {
         try (XMLDecoder xmldec = new XMLDecoder(new FileInputStream(configFile), null, myel, SRX.class.getClassLoader())) {
             res = (SRX) xmldec.readObject();
         }
-        if (myel.isExceptionOccurred()) {
+        if (myel.isExceptionOccured()) {
             StringBuilder sb = new StringBuilder();
             for (Exception ex : myel.getExceptionsList()) {
                 sb.append("    ");
@@ -83,6 +121,7 @@ public class SegmentationConfMigrator {
             }
             throw new IllegalStateException(sb.toString());
         }
+        res.setVersion("2.0");
         return res;
     }
 
@@ -102,7 +141,7 @@ public class SegmentationConfMigrator {
         /**
          * Returns whether any exceptions occured.
          */
-        public boolean isExceptionOccurred() {
+        public boolean isExceptionOccured() {
             return exceptionOccurred;
         }
 
