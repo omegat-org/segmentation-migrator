@@ -66,6 +66,17 @@ public final class LanguageCodes {
         bundle = ResourceBundle.getBundle(BASENAME, locale);
     }
 
+    public String getStandardNameFromMapRule(MapRule mr) {
+        String language = getLanguageCodeByPattern(mr.getPattern());
+        if (language == null) {
+            language = getLanguageCodeByName(mr.getLanguage());
+        }
+        if (language == null) {
+            language = mr.getLanguage();
+        }
+        return language;
+    }
+
     // Codes of "languagerulename".
     static final String CATALAN_CODE = "Catalan";
     static final String CZECH_CODE = "Czech";

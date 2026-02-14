@@ -1,6 +1,7 @@
 package org.omegat.core.segmentation;
 
 import org.jspecify.annotations.Nullable;
+import org.omegat.util.SRXUtils;
 import org.omegat.util.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +27,8 @@ public class SegmentationConfMigrator {
 
     public static void main(String[] args) {
         String targetDir = ".";
-        Path confFilePath = Paths.get(targetDir).resolve(SRX.CONF_SENTSEG);
-        Path srxFilePath = Paths.get(targetDir).resolve(SRX.SRX_SENTSEG);
+        Path confFilePath = Paths.get(targetDir).resolve(SRXUtils.CONF_SENTSEG);
+        Path srxFilePath = Paths.get(targetDir).resolve(SRXUtils.SRX_SENTSEG);
         ValidationResult validationResult = checkConfigFile(confFilePath);
         if (!validationResult.isValid()) {
             LOGGER.error(validationResult.getErrorMessage());
@@ -42,7 +43,7 @@ public class SegmentationConfMigrator {
 
     static ValidationResult checkConfigFile(Path configPath) {
         if (!configPath.toFile().exists()) {
-            return ValidationResult.failure("File " + SRX.CONF_SENTSEG + " is not found!");
+            return ValidationResult.failure("File " + SRXUtils.CONF_SENTSEG + " is not found!");
         }
         SegmentationConfValidator validator = new SegmentationConfValidator(configPath);
         return validator.validate();
@@ -55,7 +56,7 @@ public class SegmentationConfMigrator {
             }
             File srxParent = srxFilePath.getParent().toFile();
             SRX srx = loadConfFile(configPath.toFile());
-            SRX.saveToSrx(srx, srxParent);
+            SRXUtils.saveToSrx(srx, srxParent);
             return srx;
         } catch (Exception e) {
             LOGGER.error("Error occurred during conversion!", e);
