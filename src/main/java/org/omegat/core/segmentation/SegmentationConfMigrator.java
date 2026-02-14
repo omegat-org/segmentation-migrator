@@ -74,7 +74,7 @@ public class SegmentationConfMigrator {
         try (XMLDecoder xmldec = new XMLDecoder(new FileInputStream(configFile), null, myel, SRX.class.getClassLoader())) {
             res = (SRX) xmldec.readObject();
         }
-        if (myel.isExceptionOccured()) {
+        if (myel.isExceptionOccurred()) {
             StringBuilder sb = new StringBuilder();
             for (Exception ex : myel.getExceptionsList()) {
                 sb.append("    ");
@@ -92,18 +92,18 @@ public class SegmentationConfMigrator {
      */
     static class MyExceptionListener implements ExceptionListener {
         private final List<Exception> exceptionsList = new ArrayList<>();
-        private boolean exceptionOccured = false;
+        private boolean exceptionOccurred = false;
 
         public void exceptionThrown(Exception e) {
-            exceptionOccured = true;
+            exceptionOccurred = true;
             exceptionsList.add(e);
         }
 
         /**
          * Returns whether any exceptions occured.
          */
-        public boolean isExceptionOccured() {
-            return exceptionOccured;
+        public boolean isExceptionOccurred() {
+            return exceptionOccurred;
         }
 
         /**
