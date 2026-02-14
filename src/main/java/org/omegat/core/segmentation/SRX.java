@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import gen.core.segmentation.Languagemap;
 import gen.core.segmentation.Languagerule;
 import gen.core.segmentation.ObjectFactory;
@@ -78,19 +79,20 @@ public class SRX implements Serializable {
     private static final XmlMapper mapper;
 
     static {
-        // You should NOT apply XMLInputFactor.getXMLInputFactory
-        // that returns the system default object.
-        // changing the global object goes breakage of SuperTMXMerge
-        // library.
-        // https://sourceforge.net/p/omegat/bugs/1170/
         final XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+        xmlInputFactory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, Boolean.FALSE);
         XmlFactory xmlFactory = new XmlFactory(xmlInputFactory);
-        mapper = XmlMapper.builder(xmlFactory).defaultUseWrapper(false)
-                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME).build();
-        mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper = XmlMapper.builder(xmlFactory)
+                .defaultUseWrapper(false)
+                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION)
+                .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY,
+                        JsonInclude.Include.NON_EMPTY))
+                .addModule(new JakartaXmlBindAnnotationModule())
+                .build();
     }
 
     /**

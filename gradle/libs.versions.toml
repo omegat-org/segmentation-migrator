@@ -1,9 +1,12 @@
 [versions]
 slf4j = "2.0.17"
 junit = "4.13.2"
-jackson = "2.21.0"
+jackson = "2.19.2"
 jspecify = "1.0.0"
 gradle = "9.3.1"
+xjc = "4.0.6"
+jaxb4_api = "4.0.4"
+jaxb = "4.0.6"
 
 [libraries]
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
@@ -13,7 +16,11 @@ jspecify-annotations = {group = "org.jspecify", name = "jspecify", version.ref =
 jackson-core = {group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson"}
 jackson-databind = {group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson"}
 jackson-xml = {group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson"}
-jackson-jaxb = {group = "com.fasterxml.jackson.module", name = "jackson-module-jaxb-annotations", version.ref = "jackson"}
+jackson-jaxb = {group = "com.fasterxml.jackson.module", name = "jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson"}
+jaxb4-api = {group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jaxb4_api"}
+jaxb4-xjc = {group = "org.glassfish.jaxb", name = "jaxb-xjc", version.ref = "xjc"}
+jaxb4-core = {group = "org.glassfish.jaxb", name = "jaxb-core", version.ref = "jaxb"}
+jaxb4-runtime = {group = "org.glassfish.jaxb", name = "jaxb-runtime", version.ref = "jaxb"}
 
 [plugins]
 git-version = {id = "com.palantir.git-version", version = "4.3.0"}

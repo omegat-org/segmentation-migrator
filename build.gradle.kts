@@ -42,6 +42,8 @@ repositories {
     mavenCentral()
 }
 
+val jaxb by configurations.creating
+
 dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.jackson.core)
@@ -49,8 +51,55 @@ dependencies {
     implementation(libs.jackson.xml)
     implementation(libs.jackson.jaxb)
     implementation(libs.jspecify.annotations)
+
+    implementation(libs.jaxb4.api)
+    runtimeOnly(libs.jaxb4.core)
+    runtimeOnly(libs.jaxb4.runtime)
+
+    // XJC tooling on a separate configuration so it doesn't leak into runtime
+    jaxb(libs.jaxb4.xjc)
+    jaxb(libs.jaxb4.api)
+    jaxb(libs.jaxb4.runtime)
+
     runtimeOnly(libs.slf4j.simple)
     testImplementation(libs.junit4)
+}
+
+// --- JAXB / XJC codegen ---
+val generatedRoot = layout.buildDirectory.dir("generated/sources/jaxb/main/java")
+val schemaSourcePath = layout.projectDirectory.dir("src/main/resources/schema")
+
+val xjcTask = tasks.register<JavaExec>("genSegmentation") {
+    group = "jaxb"
+    description = "Run XJC for srx20.xsd"
+    classpath = jaxb
+    mainClass.set("com.sun.tools.xjc.XJCFacade")
+
+    val outDir = generatedRoot.map { it.dir("gen/core/segmentation").asFile }
+    outputs.dir(outDir)
+
+    // Make it easy to run locally and in CI
+    doFirst { outDir.get().mkdirs() }
+    val xjcArgs = listOf(
+        "-no-header",
+        "-npa",
+        "-d", generatedRoot.get().asFile.absolutePath,
+        "-p", "gen.core.segmentation",
+        schemaSourcePath.file("srx20.xsd").asFile.absolutePath,
+    )
+    args(xjcArgs)
+    doFirst {
+        generatedRoot.get().asFile.mkdirs()
+    }
+}
+
+// Add generated sources to main compilation + wire task dependency
+the<SourceSetContainer>().named("main") {
+    java.srcDir(generatedRoot)
+}
+
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn(xjcTask)
 }
 
 tasks.named<Test>("test") {
