@@ -30,8 +30,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.omegat.util.LocaleRule;
-import org.omegat.util.OStrings;
 import org.omegat.util.ValidationResult;
 
 import java.io.File;
@@ -52,52 +50,31 @@ public final class SegmentationConfMigratorTest {
 
     private static final String SEGMENT_CONF_BASE = "src/test/resources/segmentation/";
 
-    public static class SRXMigrateTest {
+    @org.junit.Rule
+    public final TemporaryFolder folder = TemporaryFolder.builder().assureDeletion().build();
 
-        @org.junit.Rule
-        public final LocaleRule localeRule = new LocaleRule(Locale.of("en"));
-
-        @org.junit.Rule
-        public final TemporaryFolder folder = TemporaryFolder.builder().assureDeletion().build();
-
-        @Test
-        public void testSrxMigration() throws Exception {
-            File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_en", "segmentation.conf").toFile();
-            File configDir = folder.newFolder();
-            SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
-        }
+    @Test
+    public void testSrxMigration() throws Exception {
+        File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_en", "segmentation.conf").toFile();
+        File configDir = folder.newFolder();
+        LanguageCodes.setLocale(Locale.of("en"));
+        SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
     }
 
-    public static class SRXMigrateJaTest {
-
-        @org.junit.Rule
-        public final LocaleRule localeRule = new LocaleRule(Locale.of("ja"));
-
-        @org.junit.Rule
-        public final TemporaryFolder folder = TemporaryFolder.builder().assureDeletion().build();
-
-        @Test
-        public void testSrxMigration() throws Exception {
-            File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_ja", "segmentation.conf").toFile();
-            File configDir = folder.newFolder();
-            SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
-        }
+    @Test
+    public void testSrxMigrationJa() throws Exception {
+        File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_ja", "segmentation.conf").toFile();
+        File configDir = folder.newFolder();
+        LanguageCodes.setLocale(Locale.of("ja"));
+        SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
     }
 
-    public static class SRXMigrateOldDeTest {
-
-        @org.junit.Rule
-        public final LocaleRule localeRule = new LocaleRule(Locale.of("de"));
-
-        @org.junit.Rule
-        public final TemporaryFolder folder = TemporaryFolder.builder().assureDeletion().build();
-
-        @Test
-        public void testSrxMigration() throws Exception {
-            File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_de_54", "segmentation.conf").toFile();
-            File configDir = folder.newFolder();
-            SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
-        }
+    @Test
+    public void testSrxMigrationOldDe() throws Exception {
+        File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_de_54", "segmentation.conf").toFile();
+        File configDir = folder.newFolder();
+        LanguageCodes.setLocale(Locale.of("de"));
+        SegmentationConfMigratorTest.testSrxMigration(segmentConf, configDir);
     }
 
     /**

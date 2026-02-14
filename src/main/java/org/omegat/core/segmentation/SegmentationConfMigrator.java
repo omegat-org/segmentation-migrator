@@ -28,15 +28,12 @@ public class SegmentationConfMigrator {
         String targetDir = ".";
         Path confFilePath = Paths.get(targetDir).resolve(SRX.CONF_SENTSEG);
         Path srxFilePath = Paths.get(targetDir).resolve(SRX.SRX_SENTSEG);
-        //
-        Locale locale = Locale.getDefault();
-        LanguageCodes.init(locale);
-        //
         ValidationResult validationResult = checkConfigFile(confFilePath);
         if (!validationResult.isValid()) {
             LOGGER.error(validationResult.getErrorMessage());
             System.exit(2);
         }
+        LanguageCodes.setLocale(Locale.getDefault());
         SRX srx = convertToSrx(confFilePath, srxFilePath);
         if (srx == null) {
             System.exit(1);

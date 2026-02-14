@@ -46,10 +46,8 @@ public final class LanguageCodes {
 
     private static @Nullable LanguageCodes instance;
 
-    public static void init(Locale locale) {
-        if (instance == null) {
-            instance = new LanguageCodes(locale);
-        }
+    public static void setLocale(Locale locale) {
+        instance = new LanguageCodes(locale);
     }
 
     public static LanguageCodes getInstance() {
