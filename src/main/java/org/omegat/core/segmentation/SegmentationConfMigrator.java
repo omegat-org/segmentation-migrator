@@ -1,5 +1,6 @@
 package org.omegat.core.segmentation;
 
+import org.jspecify.annotations.Nullable;
 import org.omegat.util.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Hiroshi Miura
@@ -31,6 +33,7 @@ public class SegmentationConfMigrator {
             LOGGER.error(validationResult.getErrorMessage());
             System.exit(2);
         }
+        LanguageCodes.setLocale(Locale.getDefault());
         SRX srx = convertToSrx(confFilePath, srxFilePath);
         if (srx == null) {
             System.exit(1);
@@ -45,7 +48,7 @@ public class SegmentationConfMigrator {
         return validator.validate();
     }
 
-    static SRX convertToSrx(Path configPath, Path srxFilePath) {
+    static @Nullable SRX convertToSrx(Path configPath, Path srxFilePath) {
         try {
             if (srxFilePath.toFile().exists()) {
                 Files.delete(srxFilePath);

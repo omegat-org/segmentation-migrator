@@ -25,6 +25,7 @@
 
 package org.omegat.core.segmentation;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -36,6 +37,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class Rule implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 7645267236376489908L;
 
     /** Creates a new empty instance of segmentation rule */
@@ -198,10 +200,9 @@ public class Rule implements Serializable {
 
     /** Indicates whether some other Rule is "equal to" this one. */
     public boolean equals(Object obj) {
-        if (!(obj instanceof Rule)) {
+        if (!(obj instanceof Rule that)) {
             return false;
         }
-        Rule that = (Rule) obj;
         return this.breakRule == that.breakRule && this.getBeforebreak().equals(that.getBeforebreak())
                 && this.getAfterbreak().equals(that.getAfterbreak());
     }
