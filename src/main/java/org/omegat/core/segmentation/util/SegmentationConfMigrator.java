@@ -24,7 +24,6 @@
  */
 package org.omegat.core.segmentation.util;
 
-import org.jspecify.annotations.Nullable;
 import org.omegat.core.segmentation.SRX;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +65,25 @@ public class SegmentationConfMigrator {
         //
         Path confFilePath = Paths.get(targetDir).resolve(SRXUtils.CONF_SENTSEG);
         Path srxFilePath = Paths.get(targetDir).resolve(SRXUtils.SRX_SENTSEG);
+        int status = doConvert(confFilePath, srxFilePath, locale);
+        System.exit(status);
+    }
+
+    static int doConvert(Path confFilePath, Path srxFilePath, Locale locale) {
         ValidationResult validationResult = checkConfigFile(confFilePath);
         if (!validationResult.isValid()) {
             LOGGER.error(validationResult.getErrorMessage());
-            System.exit(2);
+            return 2;
         }
-        SRX srx = convertToSrx(confFilePath, srxFilePath, locale);
-        if (srx == null) {
-            System.exit(1);
+        try {
+            SRX srx = convertToSrx(confFilePath, srxFilePath, locale);
+            File srxParent = srxFilePath.getParent().toFile();
+            SRXUtils.saveToSrx(srx, srxParent);
+        } catch (Exception e) {
+            LOGGER.error("Error occurred during conversion!", e);
+            return 1;
         }
+        return 0;
     }
 
     static ValidationResult checkConfigFile(Path configPath) {
@@ -85,20 +94,12 @@ public class SegmentationConfMigrator {
         return validator.validate();
     }
 
-    static @Nullable SRX convertToSrx(Path configPath, Path srxFilePath, Locale locale) {
-        try {
-            if (srxFilePath.toFile().exists()) {
-                Files.delete(srxFilePath);
-            }
-            File srxParent = srxFilePath.getParent().toFile();
-            LanguageCodes.setLocale(locale);
-            SRX srx = loadConfFile(configPath.toFile());
-            SRXUtils.saveToSrx(srx, srxParent);
-            return srx;
-        } catch (Exception e) {
-            LOGGER.error("Error occurred during conversion!", e);
+    static SRX convertToSrx(Path configPath, Path srxFilePath, Locale locale) throws IOException {
+        if (srxFilePath.toFile().exists()) {
+            Files.delete(srxFilePath);
         }
-        return null;
+        LanguageCodes.setLocale(locale);
+        return loadConfFile(configPath.toFile());
     }
 
     /**
@@ -120,6 +121,7 @@ public class SegmentationConfMigrator {
             }
             throw new IllegalStateException(sb.toString());
         }
+        res.setVersion("2.0");
         return res;
     }
 

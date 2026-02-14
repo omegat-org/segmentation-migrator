@@ -60,7 +60,6 @@ public class SegmentationConfMigratorTest {
         testSrxMigration(segmentConf, configDir, Locale.of("en"), 18);
     }
 
-
     @Test
     public void testSrxMigrationJa() throws Exception {
         File segmentConf = Paths.get(SEGMENT_CONF_BASE, "locale_ja", "segmentation.conf").toFile();
@@ -104,21 +103,13 @@ public class SegmentationConfMigratorTest {
         List<MapRule> mapRuleList = srxOrig.getMappingRules();
         assertNotNull(mapRuleList);
         assertEquals(ruleNum, mapRuleList.size());
+        assertTrue(srxOrig.isCascade());
+        assertTrue(srxOrig.isSegmentSubflows());
         assertTrue(checkRules(mapRuleList, "JA.*", LanguageCodes.JAPANESE_CODE));
         if (ruleNum > 18) {
             assertTrue(checkRules(mapRuleList, "EN-GB", "IFAF-Engels"));
         }
-        // load from srx file
-        assertTrue(segmentSrx.exists());
-        assertTrue(segmentSrx.isFile());
-        SRX srx1 = SRXUtils.loadSrxFile(segmentSrx.toURI());
-        assertNotNull(srx1);
-        mapRuleList = srx1.getMappingRules();
-        assertNotNull(mapRuleList);
-        assertEquals(ruleNum, mapRuleList.size());
-        assertEquals("2.0", srx1.getVersion());
-        assertTrue(srx1.isCascade());
-        assertTrue(srx1.isSegmentSubflows());
+        assertEquals("2.0", srxOrig.getVersion());
     }
 
     private boolean checkRules(List<MapRule> mapRuleList, String pattern, String language) {
