@@ -23,4 +23,4 @@ jaxb4-core = {group = "org.glassfish.jaxb", name = "jaxb-core", version.ref = "j
 jaxb4-runtime = {group = "org.glassfish.jaxb", name = "jaxb-runtime", version.ref = "jaxb"}
 
 [plugins]
-git-version = {id = "com.palantir.git-version", version = "4.3.0"}
+git-version = {id = "com.palantir.git-version", version = "5.0.0"}
