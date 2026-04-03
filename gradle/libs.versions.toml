@@ -6,7 +6,7 @@ jspecify = "1.0.0"
 gradle = "9.3.1"
 xjc = "4.0.6"
 jaxb4_api = "4.0.5"
-jaxb = "4.0.6"
+jaxb = "4.0.7"
 
 [libraries]
 slf4j-api = {group = "org.slf4j", name = "slf4j-api",  version.ref = "slf4j"}
