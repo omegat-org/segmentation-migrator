@@ -4,7 +4,7 @@ junit = "4.13.2"
 jackson = "2.21.1"
 jspecify = "1.0.0"
 gradle = "9.3.1"
-xjc = "4.0.6"
+xjc = "4.0.7"
 jaxb4_api = "4.0.5"
 jaxb = "4.0.7"
 
