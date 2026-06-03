@@ -1,5 +1,5 @@
 [versions]
-slf4j = "2.0.17"
+slf4j = "2.0.18"
 junit = "4.13.2"
 jackson = "2.21.3"
 jspecify = "1.0.0"
